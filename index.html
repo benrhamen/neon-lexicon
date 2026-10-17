@@ -434,6 +434,9 @@ function el(t,c,h){var d=document.createElement(t);if(c)d.className=c;if(h!=null
 function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t}return a}
 function best(k){try{return +localStorage.getItem(k)||0}catch(e){return 0}}
 function saveBest(k,v){try{if(v>best(k))localStorage.setItem(k,String(v))}catch(e){}}
+var BKEY='pl.bonus.boards.v1';
+function boardLoad(){try{var d=JSON.parse(localStorage.getItem(BKEY)||'{}');return d&&typeof d==='object'&&!Array.isArray(d)?d:{}}catch(e){return{}}}
+function boardAdd(g,score){try{if(!(score>0))return;var b=boardLoad();var a=b[g]||[];a.push({n:paName()||'Guest',s:score,d:new Date().toISOString().slice(0,10)});a.sort(function(x,y){return y.s-x.s});b[g]=a.slice(0,10);localStorage.setItem(BKEY,JSON.stringify(b))}catch(e){}}
 
 /* ---------- shared overlay shell ---------- */
 function openOv(title){
@@ -543,7 +546,7 @@ function wordRain(WORDS){
   function gameOver(){
     over=true;cancelAnimationFrame(raf);
     tiles.slice().forEach(remove);
-    saveBest('pl.wordrain.best.v1',score);
+    saveBest('pl.wordrain.best.v1',score);boardAdd('wordrain',score);
     var c=el('div','bo-center');
     c.appendChild(el('h2',null,'Round over'));
     c.appendChild(el('p',null,'You completed words for <b class="bo-score">'+score+'</b> points. Best on this device: '+best('pl.wordrain.best.v1')+'.'));
@@ -637,7 +640,7 @@ function defDash(WORDS){
   }
   function finish(){
     if(over)return;over=true;clearInterval(ticker);
-    saveBest('pl.defdash.best.v1',score);
+    saveBest('pl.defdash.best.v1',score);boardAdd('defdash',score);
     defBox.innerHTML='<b>Dash complete</b>';
     opts.innerHTML='';
     note.textContent='';
@@ -760,7 +763,7 @@ function hangman(WORDS){
   }
   var finish=el('button','bo-back','Finish');finish.type='button';
   finish.addEventListener('click',function(){
-    saveBest('pl.hangman.best.v1',score);
+    saveBest('pl.hangman.best.v1',score);boardAdd('hangman',score);
     defBox.style.display='none';kb.style.display='none';gal.innerHTML='';slots.innerHTML='';note.textContent='';
     var c=el('div','bo-center');c.style.position='static';c.style.background='none';
     c.appendChild(el('h2',null,'Game over'));
@@ -792,24 +795,38 @@ function decorateBoard(){
     for(var i=0;i<dds.length;i++){
       var dd=dds[i],sm=dd.querySelector('summary');
       if(!sm||sm.textContent.indexOf('Leaderboard')<0)continue;
-      var GAMES=[['Word Rain','pl.wordrain.best.v1'],['Definition Dash','pl.defdash.best.v1'],['Hangman','pl.hangman.best.v1']];
+      var GAMES=[['Word Rain','wordrain'],['Definition Dash','defdash'],['Hangman','hangman']];
       var sec=dd.querySelector('.bo-board');
       if(!sec){
         sec=el('section','bo-board');
-        sec.appendChild(el('h3',null,'Bonus games - best on this device'));
+        sec.appendChild(el('h3',null,'Bonus games - top scores on this device'));
         GAMES.forEach(function(r){
           var row=el('div','bo-board-row');
-          row.setAttribute('data-key',r[1]);
-          row.appendChild(el('span',null,r[0]));
-          row.appendChild(el('b',null,''));
+          row.setAttribute('data-game',r[1]);
+          row.style.display='block';
+          var nm=el('span',null,r[0]);nm.style.fontWeight='700';
+          row.appendChild(nm);
+          var lst=el('div','bo-board-list');lst.style.cssText='font-size:12px;color:#c7ebf4;padding:2px 0 8px';
+          row.appendChild(lst);
           sec.appendChild(row);
         });
         dd.appendChild(sec);
       }
       var rows=sec.querySelectorAll('.bo-board-row');
+      var boards=boardLoad();
       for(var ri=0;ri<rows.length;ri++){
-        var v=best(rows[ri].getAttribute('data-key'));
-        rows[ri].querySelector('b').textContent=v>0?(v+' points'):'Not played yet';
+        var lst=rows[ri].querySelector('.bo-board-list');
+        var arr=boards[rows[ri].getAttribute('data-game')]||[];
+        lst.innerHTML='';
+        if(!arr.length){lst.textContent='Not played yet';continue}
+        for(var ei=0;ei<arr.length;ei++){
+          var line=el('div',null,'');
+          line.style.cssText='display:flex;justify-content:space-between;padding:1px 0';
+          var who=document.createElement('span');who.textContent=(ei+1)+'. '+arr[ei].n+' - '+arr[ei].s+' pts';
+          var dt=document.createElement('span');dt.textContent=arr[ei].d;dt.style.color='#84a7ba';
+          line.appendChild(who);line.appendChild(dt);
+          lst.appendChild(line);
+        }
       }
     }
   }catch(e){}
@@ -831,4 +848,3 @@ function startBoard(){
 
 </script>
 </body></html>
-
