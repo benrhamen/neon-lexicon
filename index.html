@@ -211,6 +211,23 @@ if(document.body)mk();else document.addEventListener("DOMContentLoaded",mk)})();
 .wr-tile{position:absolute;width:42px;height:42px;border:1px solid #72efff;background:#102a39;color:#72efff;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:19px;text-transform:uppercase;cursor:pointer;box-shadow:0 0 8px rgba(114,239,255,.25);user-select:none;-webkit-user-select:none}
 .wr-tile.hit{border-color:#8fffc9;color:#8fffc9;box-shadow:0 0 12px rgba(143,255,201,.6)}
 .wr-tile.bad{border-color:#ff7d8a;color:#ff7d8a}
+.wr-tile.poof{transition:opacity .3s,transform .3s;opacity:0;transform:scale(.4)}
+.wr-tile.taken{transition:opacity .14s,transform .14s;opacity:0;transform:scale(1.25);pointer-events:none}
+.wr-tray{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;min-height:40px;align-items:center;margin-bottom:8px;padding:0 8px}
+.wr-chip{animation:wrPop .15s ease-out}
+.wr-empty{align-self:center;color:#416c7d;font-size:11px;letter-spacing:.18em;text-transform:uppercase}
+.wr-controls{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:6px}
+.wr-controls .bo-btn{padding:7px 12px;font-size:11px}
+.wr-controls .bo-btn:disabled{opacity:.35;cursor:default}
+.wr-feed{min-height:18px;font-size:12px;color:#8fffc9;margin:0}
+.wr-feed.bad{color:#ffac62}
+.wr-shake{animation:wrShake .35s}
+.wr-glow{animation:wrGlow .5s}
+.wr-recap{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;max-width:340px;max-height:130px;overflow:auto}
+.wr-recap-word{border:1px solid #1b394a;background:#102a39;color:#8fffc9;border-radius:4px;padding:3px 7px;font-size:11px}
+@keyframes wrShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}50%{transform:translateX(5px)}75%{transform:translateX(-3px)}}
+@keyframes wrGlow{0%{filter:drop-shadow(0 0 0 rgba(143,255,201,0))}40%{filter:drop-shadow(0 0 10px rgba(143,255,201,.8))}100%{filter:drop-shadow(0 0 0 rgba(143,255,201,0))}}
+@keyframes wrPop{0%{transform:scale(.6)}100%{transform:scale(1)}}
 .bo-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:rgba(11,8,32,.94);text-align:center;padding:20px}
 .bo-center h2{color:#72efff;margin:0;font-size:16px;letter-spacing:.12em;text-transform:uppercase}
 .bo-center p{color:#c7ebf4;font-size:13px;max-width:320px;margin:0}
@@ -292,7 +309,7 @@ ${phase==='ready'?`<div class="launch"><fieldset class="timers"><legend>Round ti
 
 <p class="status" role="status">${escape(message||'Each found word lights one pixel.')}</p>
 ${found.length||phase==='play'?`<section class="found"><h2>Words found <span>${found.length}</span></h2><div class="chips">${found.length?found.map(w=>`<span>${w}</span>`).join(''):'<p>Build your first word.</p>'}</div></section>`:''}
-${phase==='ready'?'</details>':''}${phase!=='play'?`<div class="verb-menu"><button class="secondary" id="openverbs"><span aria-hidden="true">▤</span> Verb table <span aria-hidden="true">→</span></button><span class="fine">Present · Past · Past perfect</span></div>`:''}${phase==='ready'?'<details class="games-dd"><summary><span class="dd-title">Games</span><span class="fine">Word Rain · Definition Dash · Hangman</span></summary><section class="bonus-sec"><div class="verb-menu"><button class="secondary" id="openwordrain">Word Rain <span aria-hidden="true">→</span></button><span class="fine">Tap falling letters in order to spell each word</span></div><div class="verb-menu"><button class="secondary" id="opendefdash">Definition Dash <span aria-hidden="true">→</span></button><span class="fine">Pick the word that fits the definition</span></div><div class="verb-menu"><button class="secondary" id="openhangman">Hangman <span aria-hidden="true">→</span></button><span class="fine">Guess the word letter by letter</span></div></section></details>':''}${phase==='done'?`<section class="result"><h2>${complete?'Congratulations, LEGEND!!!':pct(found.length,answers.length).toFixed(1)+'% of this circuit'}</h2><p>${complete?'You found every possible word. The whole drawing is lit.':found.length+' of '+answers.length+' accepted words found.'}</p><div class="actions"><button class="primary" id="replay">Replay this draw</button></div><button class="quiet answers-toggle" id="missed">${showAnswers?'Hide':'Show'} missed words (${answers.length-found.length})</button>${showAnswers?`<div class="chips missed">${answers.filter(w=>!found.includes(w)).map(w=>`<span>${w}</span>`).join('')}</div>`:''}</section>`:''}
+${phase==='ready'?'</details>':''}${phase!=='play'?`<div class="verb-menu"><button class="secondary" id="openverbs"><span aria-hidden="true">▤</span> Verb table <span aria-hidden="true">→</span></button><span class="fine">Present · Past · Past perfect</span></div>`:''}${phase==='ready'?'<details class="games-dd"><summary><span class="dd-title">Games</span><span class="fine">Word Rain · Definition Dash · Hangman</span></summary><section class="bonus-sec"><div class="verb-menu"><button class="secondary" id="openwordrain">Word Rain <span aria-hidden="true">→</span></button><span class="fine">Catch falling letters to build your own words</span></div><div class="verb-menu"><button class="secondary" id="opendefdash">Definition Dash <span aria-hidden="true">→</span></button><span class="fine">Pick the word that fits the definition</span></div><div class="verb-menu"><button class="secondary" id="openhangman">Hangman <span aria-hidden="true">→</span></button><span class="fine">Guess the word letter by letter</span></div></section></details>':''}${phase==='done'?`<section class="result"><h2>${complete?'Congratulations, LEGEND!!!':pct(found.length,answers.length).toFixed(1)+'% of this circuit'}</h2><p>${complete?'You found every possible word. The whole drawing is lit.':found.length+' of '+answers.length+' accepted words found.'}</p><div class="actions"><button class="primary" id="replay">Replay this draw</button></div><button class="quiet answers-toggle" id="missed">${showAnswers?'Hide':'Show'} missed words (${answers.length-found.length})</button>${showAnswers?`<div class="chips missed">${answers.filter(w=>!found.includes(w)).map(w=>`<span>${w}</span>`).join('')}</div>`:''}</section>`:''}
 ${phase==='ready'?'<details class="games-dd"><summary><span class="dd-title">Leaderboard</span><span class="fine">Your saved rankings on this device</span></summary>':''}${phase!=='play'?`<section class="leaderboard"><div class="sectionhead"><h2>Your percentage rankings</h2><span>THIS DEVICE</span></div><p class="fine">All draws and timer modes. Different draws have different difficulty.</p>${entries.length?`<ol>${[...entries].sort((a,b)=>pct(b.found,b.total)-pct(a.found,a.total)||a.at-b.at).slice(0,15).map((e,i)=>`<li><span class="rank">${i+1}</span><span>${escape(e.name)}<small>${e.draw.toUpperCase()} · ${e.duration===0?'Unlimited':e.duration/60+' min'} · ${e.found}/${e.total}</small></span><strong>${pct(e.found,e.total).toFixed(1)}%</strong></li>`).join('')}</ol>`:'<p class="empty">Finish a round to add your first percentage.</p>'}<p class="fine">${storage?'Saved in this browser only.':'Storage unavailable. Rankings last only while this page is open.'}</p></section><details class="credits"><summary>Dictionary & score details</summary><p>ENABLE word list, credited to M. Cooper and Alan Beale. Public-domain word-game data. All qualifying source words of 3+ letters and at most five distinct letters are included. Score is calculated at full precision and displayed to one decimal.</p><p>Dictionary fingerprint: ${VERSION}. ${WORDS.length} eligible words (words without a dictionary definition are removed). Personal practice rankings are not verified competitive records. Unlimited and replay can produce higher percentages than short rounds.</p><a target="_blank" rel="noreferrer" href="https://github.com/dolph/dictionary">Dictionary source</a><a target="_blank" rel="noreferrer" href="https://raw.githubusercontent.com/kevina/wordlist/master/scowl/Copyright">ENABLE permission and attribution</a></details>`:''}${phase==='ready'?'</details>':''}
 <footer>English only · Draw-specific percentage · Browser-local rankings</footer>`;
 if($('#reviewyes'))$('#reviewyes').onclick=()=>{lastResult.review=lastResult.review==='yes'?'no':'yes';render();};if($('#reviewno'))$('#reviewno').onclick=()=>{lastResult.review='no';render();};$('#shuffle').onclick=shuffleLetters;$('#rules').onclick=()=>{const typed=$('#word')?.value;showRules=!showRules;render();if($('#word'))$('#word').value=typed||'';};
@@ -458,114 +475,214 @@ function openOv(title){
   return {ov:ov,body:body,hud:hud,close:close,onCleanup:function(f){cleanups.push(f)}};
 }
 
-/* ---------- Word Rain ---------- */
-function wordRain(WORDS){
+/* ---------- Word Rain: catch falling letters, build your own words ---------- */
+/* Validity: the app's ENABLE list (top-level const WORDS from the main script, every
+   word 3+ letters) plus a lazy common-word supplement (wr-words.txt) that restores
+   everyday words the classic 5-letter-draw filter left out. A prefix index lets the
+   rain feed letters that can realistically extend the player's word. */
+var wrValid=null,wrPrefixes=null,wrDictC={},wrSuppP=null;
+var wrFREQ="eeeeeeeeeeeeaaaaaaaaaiiiiiiiioooooooonnnnnnrrrrrrttttttlllllsssssuuuuddddgggcccpppmmmhhbbffyywwkvxzjq";
+function wrAdd(w){
+  if(wrValid[w])return;
+  wrValid[w]=1;
+  var p="";for(var i=0;i<w.length&&i<10;i++){p+=w.charAt(i);wrPrefixes[p]=1}
+}
+function wrBuildIndex(){
+  if(wrValid)return;
+  wrValid={};wrPrefixes={};
+  for(var i=0;i<WORDS.length;i++)wrAdd(WORDS[i]);
+}
+function wrLoadSupp(){
+  if(wrSuppP)return wrSuppP;
+  wrSuppP=fetch("wr-words.txt").then(function(r){if(!r.ok)throw 0;return r.text()}).then(function(t){
+    var parts=t.split(/\s+/);
+    for(var i=0;i<parts.length;i++){var w=parts[i];if(/^[a-z]{3,15}$/.test(w))wrAdd(w)}
+  }).catch(function(){});
+  return wrSuppP;
+}
+function wrDef(word,cb){
+  var ci=+SM.charAt(word.charCodeAt(0)-97);
+  var d=wrDictC[ci];
+  if(d===undefined){
+    wrDictC[ci]=null;
+    fetch("d"+ci+".json").then(function(r){return r.ok?r.json():null}).then(function(j){wrDictC[ci]=j;wrDef(word,cb)}).catch(function(){cb(null)});
+    return;
+  }
+  if(!d){cb(null);return}
+  var s=d[word];
+  if(!s||!s.length||!s[0][1]){cb(null);return}
+  var def=cleanDef(s[0][1]);
+  if(/\b(fuck|shit|damn|sex|penis|vagina|breast|kill|murder|rape)\b/.test(def.toLowerCase()))def="";
+  cb(def||null);
+}
+function wordRain(POOL){
+  wrBuildIndex();wrLoadSupp();
   var ui=openOv('Word Rain');
-  var heartsMax=3,heartsLeft=3,score=0,wordIdx=null,word='',def='',prog=0,over=false,raf=0,lastSpawn=0,lastT=0,tiles=[],spawnEvery=1000,sinceNeeded=99,lastLetter='';
-  var heartBox=el('span','bo-hearts',hearts(heartsLeft,heartsMax));
+  var dur=-1,score=0,left=0,ticker=0,over=true,started=false,raf=0,lastSpawn=0,lastT=0,tiles=[],tray=[],made={},elapsed=0,spawnEvery=1050;
+  var clockBox=el('span',null,'');
   var scoreBox=el('span','bo-score','0');
-  ui.hud.appendChild(heartBox);ui.hud.appendChild(scoreBox);
+  ui.hud.appendChild(clockBox);ui.hud.appendChild(scoreBox);
   var panel=el('div','bo-panel');
-  var defEl=el('p','bo-def','');
-  var slots=el('div','bo-slots');
-  panel.appendChild(defEl);panel.appendChild(slots);
+  var hintEl=el('p','bo-def','Tap falling letters in the order you want to build any English word of 3+ letters. Submit it to score - fresh letters drop. Missed letters just drift away.');
+  var trayBox=el('div','wr-tray');
+  var ctr=el('div','wr-controls');
+  var submitBtn=el('button','bo-btn','Submit word');submitBtn.type='button';submitBtn.disabled=true;
+  var undoBtn=el('button','bo-btn ghost','Undo letter');undoBtn.type='button';undoBtn.disabled=true;
+  var clearBtn=el('button','bo-btn ghost','Clear');clearBtn.type='button';clearBtn.disabled=true;
+  ctr.appendChild(submitBtn);ctr.appendChild(undoBtn);ctr.appendChild(clearBtn);
+  var feed=el('div','wr-feed','');
+  panel.appendChild(hintEl);panel.appendChild(trayBox);panel.appendChild(ctr);panel.appendChild(feed);
   var field=el('div','bo-field');
   ui.body.appendChild(panel);ui.body.appendChild(field);
-  function pickWord(){
-    var i;do{i=Math.floor(Math.random()*WORDS.length)}while(i===wordIdx);
-    wordIdx=i;word=WORDS[i][0];def=WORDS[i][1];prog=0;
-    defEl.textContent=def;
-    slots.innerHTML='';
-    for(var k=0;k<word.length;k++)slots.appendChild(el('span','bo-slot',''));
-    sinceNeeded=99;
+  function renderTray(){
+    trayBox.innerHTML='';
+    if(!tray.length)trayBox.appendChild(el('span','wr-empty','tap falling letters'));
+    for(var i=0;i<tray.length;i++)trayBox.appendChild(el('span','bo-slot wr-chip',tray[i]));
+    submitBtn.disabled=tray.length<3;
+    undoBtn.disabled=!tray.length;
+    clearBtn.disabled=!tray.length;
   }
-  function need(){return word[prog]}
-  function neededOnScreen(){var n=0;tiles.forEach(function(t){if(t.letter===need())n++});return n}
-  function randLetter(){
-    // Guarantee: the needed letter is never more than 2 spawns away, and never
-    // flood the field with copies of it. Distractors avoid immediate repeats.
-    var nd=need();
-    sinceNeeded++;
-    if(sinceNeeded>=2&&neededOnScreen()===0){sinceNeeded=0;lastLetter=nd;return nd}
-    if(Math.random()<0.3&&neededOnScreen()<1){sinceNeeded=0;lastLetter=nd;return nd}
-    function countL(c){var n=0;tiles.forEach(function(t){if(t.letter===c)n++});return n}
+  function nudge(msg){
+    feed.className='wr-feed bad';feed.textContent=msg;
+    trayBox.classList.remove('wr-shake');void trayBox.offsetWidth;trayBox.classList.add('wr-shake');
+  }
+  function remove(t){var i=tiles.indexOf(t);if(i>=0)tiles.splice(i,1);if(t.el.parentNode)t.el.parentNode.removeChild(t.el)}
+  function countOnScreen(ch){var n=0;for(var i=0;i<tiles.length;i++)if(tiles[i].letter===ch)n++;return n}
+  function vowelOnScreen(){for(var i=0;i<tiles.length;i++)if("aeiou".indexOf(tiles[i].letter)>=0)return true;return false}
+  function pickLetter(){
+    // With letters in the tray, often feed one that extends it toward a real word.
+    if(tray.length&&tray.length<10&&Math.random()<0.4){
+      var base=tray.join(''),cands=[];
+      for(var c=97;c<=122;c++){var ch=String.fromCharCode(c);if(wrPrefixes[base+ch]&&countOnScreen(ch)<2)cands.push(ch)}
+      if(cands.length)return cands[Math.floor(Math.random()*cands.length)];
+    }
+    if(!vowelOnScreen()&&Math.random()<0.5){
+      var v="aeiou".charAt(Math.floor(Math.random()*5));
+      if(countOnScreen(v)<2)return v;
+    }
     var ch,tries=0;
-    do{
-      if(Math.random()<0.3)ch=word[Math.floor(Math.random()*word.length)];
-      else ch=String.fromCharCode(97+Math.floor(Math.random()*26));
-      tries++;
-    }while((ch===lastLetter||countL(ch)>=2)&&tries<8);
-    lastLetter=ch;return ch;
+    do{ch=wrFREQ.charAt(Math.floor(Math.random()*wrFREQ.length));tries++}while(countOnScreen(ch)>=2&&tries<10);
+    return ch;
   }
-  function spawn(now){
+  function spawn(top){
     var fw=field.clientWidth;
     var x=Math.random()*Math.max(40,fw-56)+4;
-    var letter=randLetter();
+    var letter=pickLetter();
     var t=el('div','wr-tile',letter);
-    t.style.left=x+'px';t.style.top='-46px';
-    var tile={el:t,y:-46,v:60+Math.min(140,score*0.5)+Math.random()*25,letter:letter};
-    t.addEventListener('pointerdown',function(ev){
-      ev.preventDefault();
-      if(over)return;
-      var ch=tile.letter;
-      if(ch===need()){
-        t.classList.add('hit');
-        var slotEls=slots.children;
-        slotEls[prog].textContent=ch;
-        prog++;
-        remove(tile);
-        if(prog>=word.length){
-          score+=word.length*10;scoreBox.textContent=score;
-          setTimeout(function(){if(!over)pickWord()},350);
-        }
-      }else{
-        t.classList.add('bad');
-        heartsLeft--;heartBox.innerHTML=hearts(heartsLeft,heartsMax);
-        remove(tile);
-        if(heartsLeft<=0)gameOver();
-      }
-    });
+    t.style.left=x+'px';t.style.top=(top==null?-46:top)+'px';
+    var tile={el:t,y:(top==null?-46:top),v:70+Math.min(150,elapsed*0.9)+Math.random()*25,letter:letter};
+    t.addEventListener('pointerdown',function(ev){ev.preventDefault();onTile(tile,t)});
     field.appendChild(t);tiles.push(tile);
   }
-  function remove(t){
-    var i=tiles.indexOf(t);if(i>=0)tiles.splice(i,1);
-    if(t.el.parentNode)t.el.parentNode.removeChild(t.el);
+  function onTile(tile,t){
+    if(over||!started)return;
+    if(tray.length>=10){nudge('Word is full - submit or erase');return}
+    tray.push(tile.letter);renderTray();
+    var i=tiles.indexOf(tile);if(i>=0)tiles.splice(i,1);
+    t.classList.add('taken');
+    setTimeout(function(){if(t.parentNode)t.parentNode.removeChild(t)},160);
   }
+  function freshWave(){
+    for(var i=0;i<tiles.length;i++)tiles[i].el.classList.add('poof');
+    tiles=[];
+    setTimeout(function(){var olds=field.querySelectorAll('.wr-tile.poof');for(var k=0;k<olds.length;k++)if(olds[k].parentNode)olds[k].parentNode.removeChild(olds[k])},320);
+    for(var s=0;s<6;s++)spawn(-46-s*70);
+    lastSpawn=performance.now();
+  }
+  function submit(){
+    if(over||!started)return;
+    var w=tray.join('');
+    if(w.length<3)return;
+    if(made[w]){nudge('Already made this round');return}
+    if(!wrValid[w]){nudge('Not in the dictionary - undo a letter or clear');return}
+    made[w]=1;
+    var pts=w.length*w.length*5;
+    score+=pts;scoreBox.textContent=score;
+    var U=w.toUpperCase();
+    feed.className='wr-feed';feed.textContent=U+' +'+pts+' pts';
+    wrDef(w,function(def){if(def&&feed.textContent.indexOf(U)===0)feed.textContent=U+' +'+pts+' pts - '+def});
+    tray=[];renderTray();
+    trayBox.classList.remove('wr-glow');void trayBox.offsetWidth;trayBox.classList.add('wr-glow');
+    freshWave();
+  }
+  submitBtn.addEventListener('click',submit);
+  undoBtn.addEventListener('click',function(){tray.pop();renderTray()});
+  clearBtn.addEventListener('click',function(){tray=[];renderTray();feed.className='wr-feed';feed.textContent=''});
+  function onKey(ev){
+    if(ev.key==='Enter')submit();
+    else if(ev.key==='Backspace'){tray.pop();renderTray()}
+  }
+  document.addEventListener('keydown',onKey);
   function frame(t){
     if(over)return;
     if(!lastT)lastT=t;
     var dt=Math.min(50,t-lastT);lastT=t;
-    if(t-lastSpawn>spawnEvery){lastSpawn=t;spawn(t);spawnEvery=Math.max(620,1050-score*1.5)}
+    elapsed+=dt/1000;
+    if(t-lastSpawn>spawnEvery){lastSpawn=t;spawn();spawnEvery=Math.max(600,1050-elapsed*5)}
     var fh=field.clientHeight;
     for(var i=tiles.length-1;i>=0;i--){
       var tl=tiles[i];tl.y+=tl.v*dt/1000;tl.el.style.top=tl.y+'px';
-      if(tl.y>fh+10)remove(tl);   // missed letters simply drift away; only wrong taps cost hearts
+      if(tl.y>fh+10)remove(tl);   // missed letters drift away free; nothing punishes exploring
     }
     raf=requestAnimationFrame(frame);
   }
-  function gameOver(){
-    over=true;cancelAnimationFrame(raf);
+  function setup(){
+    over=true;started=false;clearInterval(ticker);cancelAnimationFrame(raf);
     tiles.slice().forEach(remove);
-    saveBest('pl.wordrain.best.v1',score);boardAdd('wordrain',score);
+    clockBox.textContent='';
+    renderTray();feed.className='wr-feed';feed.textContent='';
+    var c=el('div','bo-center');
+    c.appendChild(el('h2',null,'Word Rain'));
+    c.appendChild(el('p',null,'Catch falling letters to build your own words. A word scores its length squared x 5 - a 3-letter word is 45, a 6-letter word 180. Same word only counts once per round.'));
+    var tg=el('div','bo-timers');
+    [[60,'1 min'],[120,'2 min'],[300,'5 min'],[0,'Unlimited']].forEach(function(p){
+      var b=el('button',null,p[1]);b.type='button';b.setAttribute('aria-pressed',dur===p[0]?'true':'false');
+      b.addEventListener('click',function(){dur=p[0];tg.querySelectorAll('button').forEach(function(x){x.setAttribute('aria-pressed','false')});b.setAttribute('aria-pressed','true');startBtn.disabled=false;startBtn.textContent='Start '+(p[0]===0?'unlimited':p[0]/60+'-minute')+' rain'});
+      tg.appendChild(b);
+    });
+    var startBtn=el('button','bo-btn','Pick a timer');startBtn.type='button';startBtn.disabled=true;
+    startBtn.addEventListener('click',function(){c.remove();start()});
+    c.appendChild(tg);c.appendChild(startBtn);
+    field.appendChild(c);
+    wrLoadSupp();
+  }
+  function start(){
+    score=0;scoreBox.textContent='0';made={};elapsed=0;tray=[];renderTray();
+    over=false;started=true;
+    left=dur;clockBox.textContent=dur===0?'\u221E':dur>=60?Math.floor(dur/60)+':00':dur+'';
+    if(dur>0)ticker=setInterval(function(){left--;clockBox.textContent=left>=60?Math.floor(left/60)+':'+String(left%60).padStart(2,'0'):String(left);if(left<=0)finish()},1000);
+    else{
+      var fin=el('button','bo-back','Finish');fin.type='button';
+      fin.addEventListener('click',finish);ui.hud.appendChild(fin);
+      ui.onCleanup(function(){fin.remove()});
+    }
+    lastT=0;lastSpawn=0;spawnEvery=1050;
+    raf=requestAnimationFrame(frame);
+  }
+  function finish(){
+    if(over)return;
+    over=true;started=false;clearInterval(ticker);cancelAnimationFrame(raf);
+    tiles.slice().forEach(remove);
+    saveBest('pl.wordrain.best.v2',score);boardAdd('wordrain2',score);
     var c=el('div','bo-center');
     c.appendChild(el('h2',null,'Round over'));
-    c.appendChild(el('p',null,'You completed words for <b class="bo-score">'+score+'</b> points. Best on this device: '+best('pl.wordrain.best.v1')+'.'));
+    var words=Object.keys(made).sort(function(a,b){return b.length-a.length||(a<b?-1:1)});
+    c.appendChild(el('p',null,(words.length?('You made '+words.length+' word'+(words.length===1?'':'s')+' for '):'No words this time. Score ')+'<b class="bo-score">'+score+'</b>'+(words.length?' points.':' ')+' Best on this device: '+best('pl.wordrain.best.v2')+'.'));
+    if(words.length){
+      var list=el('div','wr-recap');
+      for(var i=0;i<words.length;i++)list.appendChild(el('span','wr-recap-word',words[i].toUpperCase()+' +'+(words[i].length*words[i].length*5)));
+      c.appendChild(list);
+    }
     var again=el('button','bo-btn','Play again');again.type='button';
-    again.addEventListener('click',function(){c.remove();restart()});
+    again.addEventListener('click',function(){c.remove();setup()});
     var home=el('button','bo-btn ghost','Back to Lexicon');home.type='button';
     home.addEventListener('click',ui.close);
     c.appendChild(again);c.appendChild(home);
     field.appendChild(c);
   }
-  function restart(){
-    heartsLeft=heartsMax;score=0;scoreBox.textContent='0';
-    heartBox.innerHTML=hearts(heartsLeft,heartsMax);
-    pickWord();over=false;lastT=0;lastSpawn=0;
-    raf=requestAnimationFrame(frame);
-  }
-  pickWord();
-  raf=requestAnimationFrame(frame);
-  ui.onCleanup(function(){over=true;cancelAnimationFrame(raf)});
+  renderTray();
+  setup();
+  ui.onCleanup(function(){over=true;started=false;clearInterval(ticker);cancelAnimationFrame(raf);document.removeEventListener('keydown',onKey)});
 }
 
 /* ---------- Definition Dash ---------- */
@@ -795,7 +912,7 @@ function decorateBoard(){
     for(var i=0;i<dds.length;i++){
       var dd=dds[i],sm=dd.querySelector('summary');
       if(!sm||sm.textContent.indexOf('Leaderboard')<0)continue;
-      var GAMES=[['Word Rain','wordrain'],['Definition Dash','defdash'],['Hangman','hangman']];
+      var GAMES=[['Word Rain','wordrain2'],['Definition Dash','defdash'],['Hangman','hangman'],['Word Rain (old rules)','wordrain']];
       var sec=dd.querySelector('.bo-board');
       if(!sec){
         sec=el('section','bo-board');
@@ -816,7 +933,10 @@ function decorateBoard(){
       var boards=boardLoad();
       for(var ri=0;ri<rows.length;ri++){
         var lst=rows[ri].querySelector('.bo-board-list');
-        var arr=boards[rows[ri].getAttribute('data-game')]||[];
+        var gname=rows[ri].getAttribute('data-game');
+        var arr=boards[gname]||[];
+        if(gname==='wordrain'&&!arr.length){rows[ri].style.display='none';continue}
+        rows[ri].style.display='block';
         lst.innerHTML='';
         if(!arr.length){lst.textContent='Not played yet';continue}
         for(var ei=0;ei<arr.length;ei++){
