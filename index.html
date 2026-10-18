@@ -523,13 +523,11 @@ function wordRain(POOL){
   var scoreBox=el('span','bo-score','0');
   ui.hud.appendChild(clockBox);ui.hud.appendChild(scoreBox);
   var panel=el('div','bo-panel');
-  var hintEl=el('p','bo-def','Tap falling letters in the order you want to build any English word of 3+ letters. Submit it to score - fresh letters drop. Missed letters just drift away.');
+  var hintEl=el('p','bo-def','Tap falling letters in the order you want to build any English word of 3+ letters. Submit it to score - fresh letters drop. A submitted word that is not in the dictionary ends the game. Missed letters just drift away.');
   var trayBox=el('div','wr-tray');
   var ctr=el('div','wr-controls');
   var submitBtn=el('button','bo-btn','Submit word');submitBtn.type='button';submitBtn.disabled=true;
-  var undoBtn=el('button','bo-btn ghost','Undo letter');undoBtn.type='button';undoBtn.disabled=true;
-  var clearBtn=el('button','bo-btn ghost','Clear');clearBtn.type='button';clearBtn.disabled=true;
-  ctr.appendChild(submitBtn);ctr.appendChild(undoBtn);ctr.appendChild(clearBtn);
+  ctr.appendChild(submitBtn);
   var feed=el('div','wr-feed','');
   panel.appendChild(hintEl);panel.appendChild(trayBox);panel.appendChild(ctr);panel.appendChild(feed);
   var field=el('div','bo-field');
@@ -539,8 +537,6 @@ function wordRain(POOL){
     if(!tray.length)trayBox.appendChild(el('span','wr-empty','tap falling letters'));
     for(var i=0;i<tray.length;i++)trayBox.appendChild(el('span','bo-slot wr-chip',tray[i]));
     submitBtn.disabled=tray.length<3;
-    undoBtn.disabled=!tray.length;
-    clearBtn.disabled=!tray.length;
   }
   function nudge(msg){
     feed.className='wr-feed bad';feed.textContent=msg;
@@ -576,7 +572,7 @@ function wordRain(POOL){
   }
   function onTile(tile,t){
     if(over||!started)return;
-    if(tray.length>=10){nudge('Word is full - submit or erase');return}
+    if(tray.length>=10){nudge('Word is full - submit it');return}
     tray.push(tile.letter);renderTray();
     var i=tiles.indexOf(tile);if(i>=0)tiles.splice(i,1);
     t.classList.add('taken');
@@ -593,24 +589,25 @@ function wordRain(POOL){
     if(over||!started)return;
     var w=tray.join('');
     if(w.length<3)return;
-    if(made[w]){nudge('Already made this round');return}
-    if(!wrValid[w]){nudge('Not in the dictionary - undo a letter or clear');return}
-    made[w]=1;
-    var pts=w.length*w.length*5;
-    score+=pts;scoreBox.textContent=score;
-    var U=w.toUpperCase();
-    feed.className='wr-feed';feed.textContent=U+' +'+pts+' pts';
-    wrDef(w,function(def){if(def&&feed.textContent.indexOf(U)===0)feed.textContent=U+' +'+pts+' pts - '+def});
-    tray=[];renderTray();
-    trayBox.classList.remove('wr-glow');void trayBox.offsetWidth;trayBox.classList.add('wr-glow');
-    freshWave();
+    wrLoadSupp().then(function(){
+      if(over||!started)return;
+      if(tray.join('')!==w)return;
+      if(made[w]){nudge('Already made this round');return}
+      if(!wrValid[w]){finish('"'+w.toUpperCase()+'" is not in the dictionary - the rain ends here.');return}
+      made[w]=1;
+      var pts=w.length*w.length*5;
+      score+=pts;scoreBox.textContent=score;
+      var U=w.toUpperCase();
+      feed.className='wr-feed';feed.textContent=U+' +'+pts+' pts';
+      wrDef(w,function(def){if(def&&feed.textContent.indexOf(U)===0)feed.textContent=U+' +'+pts+' pts - '+def});
+      tray=[];renderTray();
+      trayBox.classList.remove('wr-glow');void trayBox.offsetWidth;trayBox.classList.add('wr-glow');
+      freshWave();
+    });
   }
   submitBtn.addEventListener('click',submit);
-  undoBtn.addEventListener('click',function(){tray.pop();renderTray()});
-  clearBtn.addEventListener('click',function(){tray=[];renderTray();feed.className='wr-feed';feed.textContent=''});
   function onKey(ev){
     if(ev.key==='Enter')submit();
-    else if(ev.key==='Backspace'){tray.pop();renderTray()}
   }
   document.addEventListener('keydown',onKey);
   function frame(t){
@@ -633,7 +630,7 @@ function wordRain(POOL){
     renderTray();feed.className='wr-feed';feed.textContent='';
     var c=el('div','bo-center');
     c.appendChild(el('h2',null,'Word Rain'));
-    c.appendChild(el('p',null,'Catch falling letters to build your own words. A word scores its length squared x 5 - a 3-letter word is 45, a 6-letter word 180. Same word only counts once per round.'));
+    c.appendChild(el('p',null,'Catch falling letters to build your own words. A word scores its length squared x 5 - a 3-letter word is 45, a 6-letter word 180. Same word only counts once per round. Submitting a word that is not in the dictionary ends the run - your score so far is kept.'));
     var tg=el('div','bo-timers');
     [[60,'1 min'],[120,'2 min'],[300,'5 min'],[0,'Unlimited']].forEach(function(p){
       var b=el('button',null,p[1]);b.type='button';b.setAttribute('aria-pressed',dur===p[0]?'true':'false');
@@ -659,13 +656,15 @@ function wordRain(POOL){
     lastT=0;lastSpawn=0;spawnEvery=1050;
     raf=requestAnimationFrame(frame);
   }
-  function finish(){
+  function finish(reason){
     if(over)return;
     over=true;started=false;clearInterval(ticker);cancelAnimationFrame(raf);
     tiles.slice().forEach(remove);
+    tray=[];renderTray();feed.className='wr-feed';feed.textContent='';
     saveBest('pl.wordrain.best.v2',score);boardAdd('wordrain2',score);
     var c=el('div','bo-center');
-    c.appendChild(el('h2',null,'Round over'));
+    c.appendChild(el('h2',null,reason?'Game over':'Round over'));
+    if(reason)c.appendChild(el('p',null,reason));
     var words=Object.keys(made).sort(function(a,b){return b.length-a.length||(a<b?-1:1)});
     c.appendChild(el('p',null,(words.length?('You made '+words.length+' word'+(words.length===1?'':'s')+' for '):'No words this time. Score ')+'<b class="bo-score">'+score+'</b>'+(words.length?' points.':' ')+' Best on this device: '+best('pl.wordrain.best.v2')+'.'));
     if(words.length){
